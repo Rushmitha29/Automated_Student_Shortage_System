@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AMS — Faculty Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --orange:   #F37021;
+  --orange-lt:#FFF0E6;
+  --teal:     #00A99D;
+  --teal-dk:  #007F76;
+  --teal-lt:  #E0F7F6;
+  --sidebar:  #0D3B36;
+  --bg:       #F4F7F9;
+  --card:     #fff;
+  --text:     #1A2E2C;
+  --muted:    #7A9997;
+  --border:   #E2EBEA;
+  --font:     'Sora', sans-serif;
+  --mono:     'JetBrains Mono', monospace;
+}
+html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); overflow: hidden; }
+
+/* ── Animated bg + particle canvas ── */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    radial-gradient(circle at 10% 90%, rgba(0,169,157,.10) 0%, transparent 50%),
+    radial-gradient(circle at 90% 10%, rgba(243,112,33,.08) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='30' cy='30' r='1' fill='%2300A99D' fill-opacity='.07'/%3E%3Cpath d='M0 30 L60 30 M30 0 L30 60' stroke='%2300A99D' stroke-width='.3' stroke-opacity='.04'/%3E%3C/svg%3E");
+  animation: bgDrift 20s ease-in-out infinite alternate;
+}
+@keyframes bgDrift {
+  0%   { background-position: 0% 0%, 100% 100%, 0 0; }
+  100% { background-position: 8% 6%, 92% 94%, 60px 60px; }
+}
+
+canvas#pc { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+/* Orbs */
+.orb1 {
+  position: fixed; top: -140px; left: -100px;
+  width: 480px; height: 480px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,169,157,.09) 0%, transparent 65%);
+  z-index: 0; pointer-events: none;
+  animation: orb1 22s ease-in-out infinite alternate;
+}
+.orb2 {
+  position: fixed; bottom: -160px; right: -100px;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(243,112,33,.08) 0%, transparent 65%);
+  z-index: 0; pointer-events: none;
+  animation: orb2 26s ease-in-out infinite alternate;
+}
+@keyframes orb1 { 0% { transform: translate(0,0); } 100% { transform: translate(50px, 35px); } }
+@keyframes orb2 { 0% { transform: translate(0,0); } 100% { transform: translate(-45px,-35px); } }
+
+/* ── LAYOUT ── */
+.page { display: flex; height: 100vh; position: relative; z-index: 1; }
+
+/* ── LEFT BRANDING PANEL ── */
+.left-panel {
+  width: 400px; flex-shrink: 0;
+  background: var(--sidebar);
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  padding: 48px 40px;
+  position: relative; overflow: hidden;
+}
+.left-panel::before {
+  content: ''; position: absolute;
+  bottom: -100px; right: -80px;
+  width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,169,157,.18) 0%, transparent 70%);
+  pointer-events: none;
+  animation: sideGlow 6s ease-in-out infinite alternate;
+}
+.left-panel::after {
+  content: ''; position: absolute;
+  top: -60px; left: -60px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(243,112,33,.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+@keyframes sideGlow { 0% { opacity: .5; transform: scale(1); } 100% { opacity: 1; transform: scale(1.25); } }
+
+.brand { text-align: center; position: relative; z-index: 1; }
+.brand-ring {
+  width: 100px; height: 100px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal-lt), var(--orange-lt));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 44px; margin: 0 auto 24px;
+  animation: ringPulse 3s ease-in-out infinite;
+}
+@keyframes ringPulse {
+  0%,100% { box-shadow: 0 0 0 14px rgba(0,169,157,.07), 0 0 0 28px rgba(0,169,157,.04); }
+  50%      { box-shadow: 0 0 0 22px rgba(0,169,157,.12), 0 0 0 42px rgba(0,169,157,.06); }
+}
+.brand-ring::before {
+  content: ''; position: absolute; inset: -16px; border-radius: 50%;
+  border: 1.5px solid rgba(0,169,157,.18);
+  animation: orbit 10s linear infinite;
+}
+.brand-ring::after {
+  content: ''; position: absolute; inset: -30px; border-radius: 50%;
+  border: 1px dashed rgba(243,112,33,.12);
+  animation: orbit 18s linear infinite reverse;
+}
+.brand-ring { position: relative; }
+@keyframes orbit { to { transform: rotate(360deg); } }
+
+.brand-title     { font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -1px; margin-bottom: 4px; }
+.brand-title span{ color: var(--orange); }
+.brand-sub       { font-size: 11px; color: rgba(255,255,255,.42); letter-spacing: 2px; text-transform: uppercase; font-weight: 500; }
+
+.left-divider { width: 40px; height: 2px; background: rgba(255,255,255,.1); margin: 26px auto; }
+
+.features { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.feat-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: 14px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.07);
+  transition: background .2s ease;
+}
+.feat-item:hover { background: rgba(255,255,255,.09); }
+.feat-icon {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.feat-text        { font-size: 12px; color: rgba(255,255,255,.58); line-height: 1.5; }
+.feat-text strong { display: block; color: rgba(255,255,255,.88); font-weight: 600; margin-bottom: 1px; }
+
+.left-footer {
+  position: absolute; bottom: 24px;
+  font-size: 10px; color: rgba(255,255,255,.2); text-align: center; letter-spacing: .5px;
+}
+
+/* ── RIGHT LOGIN PANEL ── */
+.right-panel { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; }
+
+.login-card {
+  background: var(--card);
+  border-radius: 28px;
+  box-shadow: 0 8px 48px rgba(0,169,157,.12);
+  border: 1px solid var(--border);
+  padding: 42px 40px;
+  width: 100%; max-width: 420px;
+  animation: cardIn .5s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(24px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.card-header    { margin-bottom: 28px; }
+.card-title     { font-size: 22px; font-weight: 700; letter-spacing: -.5px; margin-bottom: 4px; }
+.card-sub       { font-size: 13px; color: var(--muted); }
+.card-sub span  { color: var(--orange); font-weight: 600; }
+
+.field           { margin-bottom: 18px; }
+.field label {
+  display: block; font-size: 11px; font-weight: 700;
+  color: var(--muted); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px;
+}
+.field-wrap  { position: relative; }
+.field-icon  { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 16px; pointer-events: none; }
+.field input {
+  width: 100%; padding: 12px 14px 12px 40px;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  font-family: var(--font); font-size: 13px; color: var(--text);
+  background: var(--bg); outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.field input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,169,157,.12); }
+.field input.error { border-color: #E74C3C; }
+
+.error-msg {
+  background: #FFF0EE; border: 1px solid #FCCBC4; border-radius: 10px;
+  padding: 10px 14px; font-size: 12px; color: #C0392B;
+  margin-bottom: 16px; display: none; align-items: center; gap: 8px;
+}
+.error-msg.show { display: flex; }
+
+.btn-login {
+  width: 100%; padding: 14px;
+  background: var(--orange); color: #fff;
+  border: none; border-radius: 50px;
+  font-family: var(--font); font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all .2s;
+  box-shadow: 0 6px 20px rgba(243,112,33,.35);
+  position: relative; overflow: hidden;
+}
+.btn-login::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.2) 50%, transparent 65%);
+  transform: translateX(-100%);
+  transition: transform .45s ease;
+}
+.btn-login:hover::after { transform: translateX(100%); }
+.btn-login:hover  { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(243,112,33,.45); }
+.btn-login:active { transform: translateY(0); }
+.btn-login:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+.btn-login .spinner {
+  display: none; width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%;
+  animation: spin .6s linear infinite;
+  position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+}
+@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+.btn-login.loading .spinner { display: block; }
+.btn-login.loading .btn-text { opacity: .7; }
+
+/* Faculty demo accounts */
+.demo-accounts {
+  margin-top: 22px; padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.demo-title {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .8px; margin-bottom: 10px;
+}
+.demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.demo-chip {
+  padding: 8px 10px; border-radius: 10px;
+  border: 1.5px solid var(--border);
+  cursor: pointer; transition: all .2s; text-align: left;
+  background: transparent; font-family: var(--font);
+}
+.demo-chip:hover { border-color: var(--teal); background: var(--teal-lt); }
+.demo-chip-name { font-size: 12px; font-weight: 600; color: var(--text); display: block; }
+.demo-chip-role { font-size: 10px; color: var(--muted); display: block; margin-top: 1px; }
+</style>
+</head>
+<body>
+
+<!-- Animated bg layers -->
+<canvas id="pc"></canvas>
+<div class="orb1"></div>
+<div class="orb2"></div>
+
+<div class="page">
+
+  <!-- LEFT BRANDING -->
+  <div class="left-panel">
+    <div class="brand">
+      <div class="brand-ring">🎓</div>
+      <div class="brand-title">AMS <span>Portal</span></div>
+      <div class="brand-sub">Attendance Monitoring System</div>
+    </div>
+    <div class="left-divider"></div>
+    <div class="features">
+      <div class="feat-item">
+        <div class="feat-icon" style="background:rgba(0,169,157,.18)">📤</div>
+        <div class="feat-text">
+          <strong>Upload &amp; Process</strong>
+          Import Excel attendance files and auto-filter at-risk students
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon" style="background:rgba(243,112,33,.18)">💬</div>
+        <div class="feat-text">
+          <strong>Instant SMS Alerts</strong>
+          Notify parents via Twilio with one click for below-75% students
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon" style="background:rgba(108,92,231,.18)">📊</div>
+        <div class="feat-text">
+          <strong>Per-Faculty Data</strong>
+          Your uploads, downloads &amp; SMS history saved &amp; restored on login
+        </div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-icon" style="background:rgba(46,204,113,.18)">⬇️</div>
+        <div class="feat-text">
+          <strong>Export Reports</strong>
+          Download filtered Excel &amp; individual PDF shortage letters
+        </div>
+      </div>
+    </div>
+    <div class="left-footer">GNITS · CSE Department · AY 2025–2026</div>
+  </div>
+
+  <!-- RIGHT LOGIN -->
+  <div class="right-panel">
+    <div class="login-card">
+      <div class="card-header">
+        <div class="card-title">Welcome back 👋</div>
+        <div class="card-sub">Sign in to your <span>Faculty AMS</span> account</div>
+      </div>
+
+      <div class="error-msg" id="error-msg">
+        <span>⚠️</span><span id="error-text">Invalid credentials</span>
+      </div>
+
+      <div class="field">
+        <label>Username</label>
+        <div class="field-wrap">
+          <span class="field-icon">👤</span>
+          <input type="text" id="username" placeholder="Enter your username"
+                 onkeydown="if(event.key==='Enter') doLogin()"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <div class="field-wrap">
+          <span class="field-icon">🔒</span>
+          <input type="password" id="password" placeholder="Enter your password"
+                 onkeydown="if(event.key==='Enter') doLogin()"/>
+        </div>
+      </div>
+
+      <button class="btn-login" id="login-btn" onclick="doLogin()">
+        <span class="btn-text">Sign In →</span>
+        <span class="spinner"></span>
+      </button>
+
+    
+
+   
+  </div>
+</div>
+
+<script>
+/* ── Particles ── */
+(function() {
+  const canvas = document.getElementById('pc');
+  const ctx    = canvas.getContext('2d');
+  let W, H, particles = [];
+  const COLORS = ['rgba(0,169,157,', 'rgba(243,112,33,', 'rgba(0,135,122,'];
+
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+
+  function Particle() {
+    this.reset = function(init) {
+      this.x = Math.random() * W;
+      this.y = init ? Math.random() * H : H + 10;
+      this.r = Math.random() * 2 + 0.5;
+      this.speed = Math.random() * 0.3 + 0.1;
+      this.dx = (Math.random() - 0.5) * 0.3;
+      this.alpha = Math.random() * 0.5 + 0.15;
+      this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      this.twinkle = Math.random() * Math.PI * 2;
+      this.twinkleSpeed = Math.random() * 0.025 + 0.008;
+    };
+    this.reset(true);
+  }
+
+  function init() {
+    resize(); particles = [];
+    const count = Math.floor((W * H) / 9000);
+    for (let i = 0; i < count; i++) particles.push(new Particle());
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.twinkle += p.twinkleSpeed;
+      const a = p.alpha * (0.6 + 0.4 * Math.sin(p.twinkle));
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + a + ')';
+      ctx.fill();
+      p.y -= p.speed; p.x += p.dx;
+      if (p.y < -5 || p.x < -5 || p.x > W + 5) p.reset(false);
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', init);
+  init(); draw();
+})();
+
+/* ── Mouse parallax on orbs ── */
+(function() {
+  const o1 = document.querySelector('.orb1');
+  const o2 = document.querySelector('.orb2');
+  let mx = 0, my = 0, cx = 0, cy = 0;
+  document.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+    my = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+  (function tick() {
+    cx += (mx - cx) * 0.04; cy += (my - cy) * 0.04;
+    if (o1) o1.style.transform = `translate(${cx * 20}px, ${cy * 16}px)`;
+    if (o2) o2.style.transform = `translate(${-cx * 16}px, ${-cy * 12}px)`;
+    requestAnimationFrame(tick);
+  })();
+})();
+
+/* ── Login ── */
+function fillDemo(u, p) {
+  document.getElementById('username').value = u;
+  document.getElementById('password').value = p;
+  document.getElementById('error-msg').classList.remove('show');
+  document.getElementById('username').classList.remove('error');
+  document.getElementById('password').classList.remove('error');
+}
+
+async function doLogin() {
+  const btn  = document.getElementById('login-btn');
+  const u    = document.getElementById('username').value.trim();
+  const p    = document.getElementById('password').value;
+  const errD = document.getElementById('error-msg');
+  const errT = document.getElementById('error-text');
+
+  errD.classList.remove('show');
+  document.getElementById('username').classList.remove('error');
+  document.getElementById('password').classList.remove('error');
+
+  if (!u || !p) {
+    errT.textContent = 'Please enter your username and password.';
+    errD.classList.add('show');
+    if (!u) document.getElementById('username').classList.add('error');
+    if (!p) document.getElementById('password').classList.add('error');
+    return;
+  }
+
+  btn.disabled = true; btn.classList.add('loading');
+  btn.querySelector('.btn-text').textContent = 'Signing in…';
+
+  try {
+    const res  = await fetch('/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username: u, password: p})
+    });
+    const json = await res.json();
+
+    if (json.success) {
+      btn.querySelector('.btn-text').textContent = '✅ Redirecting…';
+      window.location.href = '/';
+    } else {
+      errT.textContent = json.error || 'Invalid credentials. Please try again.';
+      errD.classList.add('show');
+      document.getElementById('username').classList.add('error');
+      document.getElementById('password').classList.add('error');
+      btn.disabled = false; btn.classList.remove('loading');
+      btn.querySelector('.btn-text').textContent = 'Sign In →';
+    }
+  } catch(e) {
+    errT.textContent = 'Network error. Please try again.';
+    errD.classList.add('show');
+    btn.disabled = false; btn.classList.remove('loading');
+    btn.querySelector('.btn-text').textContent = 'Sign In →';
+  }
+}
+</script>
+</body>
+</html>

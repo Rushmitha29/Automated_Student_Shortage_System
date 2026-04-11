@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Attendance Shortage Notice</title>
+<style>
+@page {
+    size: A4;
+   margin:45mm;
+}
+body {
+    font-family: "Times New Roman", serif;
+    margin: 0;
+    font-size: 13pt;
+    line-height: 1.5;
+}
+.center { text-align: center; }
+.right { text-align: right; }
+.underline { text-decoration: underline; }
+.bold { font-weight: bold; }
+
+/* HEADER WITH LOGO AND TITLE USING TABLE */
+.header-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.header-table td {
+    border: none;   /* no outline boxes */
+    vertical-align: middle;
+}
+.logo-cell {
+    width: 200px;   /* fixed width for logo cell */
+}
+.title-cell {
+    text-align: center;
+}
+.logo {
+    width: 120px;
+    height: auto;
+}
+
+/* Attendance table (with borders) */
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 13pt;
+}
+.attendance-table, .attendance-table th, .attendance-table td {
+    border: 1px solid black;
+}
+.attendance-table th, .attendance-table td {
+    padding: 4px;
+    text-align: center;
+}
+
+/* Signature tables (no borders) */
+.signature-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+}
+.signature-table td {
+    border: none;   /* no outline boxes */
+    width: 50%;
+    vertical-align: top;
+}
+.signature-table td.right {
+    text-align: right;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<table class="header-table">
+<tr>
+    <td class="logo-cell"><img src="file:///C:/Users/Rushimtha/Downloads/shortage/gnits-logo.png" class="logo"></td>
+    <td class="title-cell">
+        <h2>G. Narayanamma Institute of Technology & Science</h2>
+        <div><b>(AUTONOMOUS)</b> (for Women)</div>
+        <p>Shaikpet, Hyderabad - 500104</p>
+    </td>
+</tr>
+</table>
+
+<div class="right">Date: {{today_date}}</div>
+
+<h3 class="center underline">DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING</h3>
+
+<p>
+    From<br>
+    The Head of the Department,<br>
+    Sir / Madam,
+</p>
+
+<p class="center bold">Sub: - Shortage of attendance of your daughter - Reg.</p>
+
+<p style="text-align: justify;">
+    It is to bring to your kind notice that your daughter Ms.
+    <b>{{name}}</b> bearing Regd. No.
+    <b>{{roll}}</b> has put in
+    <b>{{percentage}}%</b> of cumulative attendance from
+    <b>{{from_date}} to {{to_date}}</b> as per details shown below.
+    Kindly note that she has to obtain a minimum of <b>75%</b> cumulative attendance
+    in all subjects by the time the semester ends. In case the attendance is in
+    between <b>65% to 75%</b>, she will be condoned. For <b>65% below attendance</b>,
+    she will be detained and will not be allowed to attend the university examinations.
+    She has to repeat the same class as and when it is offered as per the regulations of JNTUH University/GNITS Autonomous.
+    We request you to communicate with the class teacher personally to know
+    about the performance and shortage of attendance. Kindly acknowledge the
+    receipt of this letter.
+</p>
+
+<div class="right">Yours faithfully,</div>
+<br>
+
+<!-- SIGNATURES -->
+<table class="signature-table">
+<tr>
+    <td><b>Class Teacher</b></td>
+    <td class="right">
+        <b>Dr. A. Sharada</b><br>
+        HOD CSE
+    </td>
+</tr>
+</table>
+
+<h4 class="center">Attendance</h4>
+
+<table class="attendance-table">
+    <tr>
+        <th>Subject</th>
+        {{subjects}}
+    </tr>
+    <tr>
+        <td>Max. No. of periods held</td>
+        {{held}}
+    </tr>
+    <tr>
+        <td>Periods attended</td>
+        {{attended}}
+    </tr>
+</table>
+
+<h4 class="center">UNDERTAKING BY THE PARENT</h4>
+
+<p style="text-align: justify;">
+    I __________________________ parent / guardian of Ms {{name}}
+    will ensure that my ward will obtain a minimum of <b>75%</b> cumulative attendance
+    in all subjects by the end of academic year.
+    For <b>65% below attendance</b>, I am aware of the consequences that she will be
+    detained and has to repeat the same class as and when it is offered.
+    My contact number is ..........................................................
+</p>
+<br>
+<!-- STUDENT & PARENT SIGNATURE -->
+<table class="signature-table">
+<tr>
+    <td>
+        <b>Signature of the Student</b><br>
+        <b>Date:</b>
+    </td>
+    <td class="right">
+        <b>Signature of the Parent / Guardian</b><br>
+        <b>Date:</b>
+    </td>
+</tr>
+</table>
+
+</body>
+</html>

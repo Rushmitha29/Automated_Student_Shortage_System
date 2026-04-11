@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AMS — Attendance Monitoring System</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+<!-- Animated background layers -->
+<canvas id="particle-canvas"></canvas>
+<div class="orb-teal"></div>
+<div class="orb-orange"></div>
+<div class="orb-mid"></div>
+
+<div class="app">
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🎓</div>
+      <div>
+        <span class="logo-title">AMS Portal</span>
+        <span class="logo-sub">Monitoring System</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" id="nav-splash"
+           onclick="go('splash',this,'Dashboard','Welcome back')">
+        <span class="nav-icon">🏠</span> Dashboard
+      </div>
+      <div class="nav-item" id="nav-onboard"
+           onclick="go('onboard',this,'Onboarding','System Setup Guide')">
+        <span class="nav-icon">📋</span> Onboarding
+      </div>
+      <div class="nav-item" id="nav-upload"
+           onclick="go('upload',this,'Upload Data','Import Attendance Records')">
+        <span class="nav-icon">📤</span> Upload Data
+      </div>
+      <div class="nav-item" id="nav-analytics"
+           onclick="go('analytics',this,'Analytics','Attendance Insights')">
+        <span class="nav-icon">📊</span> Analytics
+        <span class="nav-badge" id="analytics-badge" style="display:none">0</span>
+      </div>
+      <div class="nav-item" id="nav-sms"
+           onclick="go('sms',this,'SMS Gateway','Bulk Messaging Center')">
+        <span class="nav-icon">💬</span> SMS Gateway
+      </div>
+      <div class="nav-item" id="nav-downloads"
+           onclick="go('downloads',this,'Downloads','Export Reports')">
+        <span class="nav-icon">⬇️</span> Downloads
+      </div>
+    </nav>
+
+    <!-- Faculty user widget -->
+    <div class="sidebar-user" id="sidebar-user">
+      <div class="su-avatar" id="su-avatar">—</div>
+      <div>
+        <div class="su-name" id="su-name">Loading…</div>
+        <div class="su-dept" id="su-dept"></div>
+      </div>
+      <button class="su-logout" onclick="doLogout()" title="Logout">⏻</button>
+    </div>
+
+    <div class="sidebar-footer">
+      <span class="live-dot"></span>System Online &nbsp;·&nbsp; v2.4.1<br>AY 2025–2026
+    </div>
+  </aside>
+
+  <!-- ══════════ MAIN ══════════ -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-sub"   id="topbar-sub">Welcome back</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date" id="live-date"></div>
+        <div class="avatar" id="topbar-avatar">—</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           SCREEN 1 — ANIMATED DASHBOARD HERO
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen active" id="screen-splash">
+        <div class="splash-wrap">
+
+          <!-- Floating badge -->
+          <div class="splash-label">
+            <span class="splash-label-dot"></span>
+            Attendance Monitoring System
+          </div>
+
+          <!-- Logo ring with orbiting decorations -->
+          <div class="splash-ring">🎓</div>
+
+          <!-- Headline -->
+          <div class="splash-title">Track Student <span>Attendance</span></div>
+          <div class="splash-title-line2">At a Glance</div>
+
+          <!-- Animated underline -->
+          <div class="splash-divider"></div>
+
+          <div class="splash-sub" id="splash-welcome">
+            Upload attendance data, identify at-risk students below 75%,
+            send automated SMS alerts, and export polished reports — all in one place.
+          </div>
+
+          <!-- CTA -->
+          <div class="splash-cta">
+            <button class="btn-primary" style="padding:13px 40px;font-size:14px"
+              onclick="go('upload',document.getElementById('nav-upload'),'Upload Data','Import Attendance Records')">
+              Get Started →
+            </button>
+            <button class="btn-primary" style="padding:13px 40px;font-size:14px"
+              onclick="go('onboard',document.getElementById('nav-onboard'),'Onboarding','System Setup Guide')">
+              View Guide
+            </button>
+          </div>
+
+
+
+          <!-- Live stats card -->
+          <div class="splash-stats">
+            <div class="splash-stat">
+              <span class="s-stat-val" id="dash-total">—</span>
+              <span class="s-stat-lbl">At-Risk Students</span>
+            </div>
+            <div class="splash-stat">
+              <span class="s-stat-val" id="dash-sent">—</span>
+              <span class="s-stat-lbl">SMS Sent</span>
+            </div>
+            <div class="splash-stat">
+              <span class="s-stat-val" id="dash-uploads">—</span>
+              <span class="s-stat-lbl">Files Uploaded</span>
+            </div>
+          </div>
+
+          <!-- Last activity banner -->
+          <div id="last-activity"></div>
+
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           SCREEN 2 — ONBOARDING
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen" id="screen-onboard">
+        <div class="onboard-steps">
+          <div class="card step-card">
+            <div class="step-emoji">📁</div>
+            <div class="step-num" style="background:var(--orange)">1</div>
+            <div class="step-title">Prepare Your Data</div>
+            <div class="step-desc">Export your attendance records from your SIS as an Excel (.xlsx) file.
+              Must include Roll No, Name, and Present % columns.</div>
+          </div>
+          <div class="card step-card">
+            <div class="step-emoji">⬆️</div>
+            <div class="step-num" style="background:var(--teal)">2</div>
+            <div class="step-title">Upload &amp; Validate</div>
+            <div class="step-desc">Drag and drop your .xlsx file. AMS will auto-filter students below 75%,
+              generate an Excel export, and create individual PDF shortage letters.</div>
+          </div>
+          <div class="card step-card">
+            <div class="step-emoji">📊</div>
+            <div class="step-num" style="background:#6C5CE7">3</div>
+            <div class="step-title">Analyze &amp; Act</div>
+            <div class="step-desc">Review at-risk students, send SMS alerts to parents via Twilio,
+              and download polished PDF or Excel reports.</div>
+          </div>
+        </div>
+        <div class="onboard-info">
+          <div class="card info-card">
+            <div class="info-icon-box" style="background:var(--orange-lt)">📌</div>
+            <div>
+              <div class="info-title">Required File Format</div>
+              <div class="info-desc">Excel (.xlsx) with: Roll No, Name, Present % (0–100 or 0–1 decimal),
+                and subject-wise columns. Group rows indicate classes held.</div>
+            </div>
+          </div>
+          <div class="card info-card">
+            <div class="info-icon-box" style="background:var(--teal-lt)">🔒</div>
+            <div>
+              <div class="info-title">Data Privacy</div>
+              <div class="info-desc">All uploaded records are processed locally on this server.
+                Data is sent externally only via Twilio for SMS notifications.</div>
+            </div>
+          </div>
+          <div class="card info-card">
+            <div class="info-icon-box" style="background:#FFF0EE">⚠️</div>
+            <div>
+              <div class="info-title">Attendance Threshold</div>
+              <div class="info-desc">Students with Present % below 75 are automatically flagged as
+                at-risk and queued for SMS notification.</div>
+            </div>
+          </div>
+          <div class="card info-card">
+            <div class="info-icon-box" style="background:#F0F4FF">📞</div>
+            <div>
+              <div class="info-title">SMS Gateway Setup</div>
+              <div class="info-desc">Uses Twilio. Parent phone numbers are looked up from the local
+                students.db SQLite database by Roll No. Prefix +91 (India).</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           SCREEN 3 — UPLOAD DATA
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen" id="screen-upload">
+        <div class="upload-grid">
+
+          <div class="dropzone" id="dropzone"
+               onclick="document.getElementById('file-input').click()"
+               ondragover="dzOver(event)"
+               ondragleave="dzLeave()"
+               ondrop="dzDrop(event)">
+            <input type="file" id="file-input" accept=".xlsx" style="display:none"
+                   onchange="handleFile(this)"/>
+            <div class="dz-icon">☁️</div>
+            <div class="dz-title">Drag &amp; Drop your file here</div>
+            <div class="dz-sub">or <span>browse files</span> to upload</div>
+            <div class="dz-sub" style="margin-top:8px">Supports: .xlsx &nbsp;·&nbsp; Max size: 10 MB</div>
+            <div id="dz-sel" style="margin-top:12px;font-size:12px;color:var(--teal);font-weight:600;display:none"></div>
+          </div>
+
+          <div class="card" style="align-self:start">
+            <div class="section-header">
+              <span class="section-title">Upload Progress</span>
+              <span class="pill pill-teal" id="up-pill">Idle</span>
+            </div>
+            <div class="prog-label">
+              <span class="prog-filename" id="prog-fname">No file selected</span>
+              <span class="prog-pct"      id="prog-pct">0%</span>
+            </div>
+            <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+            <div class="prog-meta" id="prog-meta">Select a file to begin…</div>
+
+            <!-- ── NEW: Date range + Attendance range dropdown ── -->
+            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+              <div>
+                <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">From Date</label>
+                <input type="date" id="from_date" class="input-field"
+                       style="padding:6px 10px;font-size:12px;width:auto"/>
+              </div>
+              <div>
+                <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">To Date</label>
+                <input type="date" id="to_date" class="input-field"
+                       style="padding:6px 10px;font-size:12px;width:auto"/>
+              </div>
+              <div>
+                <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Attendance Range (%)</label>
+                <select id="att_range" class="input-field"
+                        style="padding:6px 10px;font-size:12px;width:auto;cursor:pointer">
+                  <option value="0-75" selected>Below 75% (Default)</option>
+                  <option value="0-5">0 – 5%</option>
+                  <option value="5-15">5 – 15%</option>
+                  <option value="15-25">15 – 25%</option>
+                  <option value="25-35">25 – 35%</option>
+                  <option value="35-45">35 – 45%</option>
+                  <option value="45-55">45 – 55%</option>
+                  <option value="55-65">55 – 65%</option>
+                  <option value="65-75">65 – 75%</option>
+                  <option value="75-85">75 – 85%</option>
+                  <option value="85-100">85 – 100%</option>
+                  <option value="0-100">All Students (0–100%)</option>
+                </select>
+              </div>
+            </div>
+            <!-- ── END NEW ── -->
+
+            <div style="margin-top:16px;display:flex;gap:8px">
+              <button class="btn-primary" id="up-btn" onclick="submitUpload()" disabled>Upload</button>
+              <button class="btn-secondary" onclick="clearUpload()">Clear</button>
+            </div>
+          </div>
+
+          <div class="card" style="align-self:start">
+            <div class="section-title" style="margin-bottom:4px">File Requirements</div>
+            <ul class="upload-rules">
+              <li><span class="rule-dot"></span>File must be Excel format (.xlsx)</li>
+              <li><span class="rule-dot"></span>Must contain "Roll No", "Name", "Present %" columns</li>
+              <li><span class="rule-dot"></span>Present % can be decimal (0–1) or percentage (0–100)</li>
+              <li><span class="rule-dot"></span>Group rows mark classes-held counts per subject</li>
+              <li><span class="rule-dot" style="background:var(--orange)"></span>Max 50,000 rows per upload</li>
+            </ul>
+          </div>
+
+          <div class="card" style="grid-column:span 2">
+            <div class="section-header">
+              <span class="section-title">Recent Uploads</span>
+              <span class="section-action" onclick="loadUploadHistory()">↻ Refresh</span>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Filename</th><th>Date</th><th>At-Risk Records</th><th>Status</th></tr>
+              </thead>
+              <tbody id="upload-hist-tbody">
+                <tr><td colspan="4" class="empty-cell">No uploads yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           SCREEN 4 — ANALYTICS
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen" id="screen-analytics">
+        <div class="kpi-row">
+          <div class="card kpi-card">
+            <div class="kpi-label">At-Risk Students</div>
+            <div class="donut" id="donut-atrisk" style="--dp:0%;--dc:#E74C3C" data-label="0"></div>
+            <div class="kpi-name">Below 75%</div>
+            <div class="kpi-delta" id="kd-atrisk" style="color:var(--muted)">Upload data to see</div>
+          </div>
+          <div class="card kpi-card">
+            <div class="kpi-label">SMS Notifications</div>
+            <div class="donut" id="donut-sms" style="--dp:0%;--dc:#00A99D" data-label="0"></div>
+            <div class="kpi-name">Parents Notified</div>
+            <div class="kpi-delta" id="kd-sms" style="color:var(--muted)">No SMS sent yet</div>
+          </div>
+          <div class="card kpi-card">
+            <div class="kpi-label">Files Processed</div>
+            <div class="donut" id="donut-up" style="--dp:0%;--dc:#F37021" data-label="0"></div>
+            <div class="kpi-name">Total Uploads</div>
+            <div class="kpi-delta" id="kd-up" style="color:var(--muted)">No uploads yet</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="section-header">
+            <span class="section-title" id="atrisk-section-title">⚠️ At-Risk Student List (Below 75%)</span>
+            <a href="/download" id="export-link"
+               style="font-size:12px;color:var(--muted);font-weight:600;
+                      text-decoration:none;pointer-events:none">⬇ Export Excel</a>
+          </div>
+          <div id="data-timestamp" style="font-size:11px;color:var(--muted);
+               font-family:var(--mono);margin-bottom:10px;display:none"></div>
+          <table>
+            <thead>
+              <tr><th>S.No</th><th>Roll No</th><th>Name</th><th>Attendance %</th><th>Risk Level</th><th>Action</th></tr>
+            </thead>
+            <tbody id="analytics-tbody">
+              <tr><td colspan="6" class="empty-cell">No data — please upload a file first</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           SCREEN 5 — SMS GATEWAY
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen" id="screen-sms">
+        <div class="card sms-header-card">
+          <div class="sms-header-left">
+            <div class="sms-icon-ring">💬</div>
+            <div>
+              <div class="sms-head-title">Bulk Send — SMS Gateway</div>
+              <div class="sms-head-sub">Send attendance alerts to parents via Twilio (+91 prefix)</div>
+            </div>
+          </div>
+          <div class="sms-stats">
+            <div><div class="sms-stat-val" style="color:var(--teal)" id="sms-sent">0</div><div class="sms-stat-lbl">Sent</div></div>
+            <div><div class="sms-stat-val" style="color:var(--orange)" id="sms-pending">0</div><div class="sms-stat-lbl">Pending</div></div>
+            <div><div class="sms-stat-val" style="color:#E74C3C" id="sms-total">0</div><div class="sms-stat-lbl">At-Risk Total</div></div>
+          </div>
+        </div>
+
+        <div class="sms-compose">
+          <div class="card">
+            <div class="section-title" style="margin-bottom:14px">Bulk Send</div>
+            <div class="input-group">
+              <label class="input-label">Recipients</label>
+              <input class="input-field" id="sms-recipients" value="Upload data to load at-risk students" readonly/>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Message Preview (sent via Twilio — includes student % automatically)</label>
+              <!-- ── NEW: textarea shows the actual message template with percentage placeholder ── -->
+              <textarea class="input-field" id="sms-body" readonly style="height:100px">GNITS: Dear Parent, This is to inform you that your ward, {Name} (Roll No: {Roll No}), has an attendance of {Present %}% which is below 75% this month. Kindly ensure regular attendance. Regards, HOD CSE GNITS</textarea>
+              <div class="char-count"><span id="char-ct">0</span> characters</div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px;align-items:center">
+              <button class="btn-primary" id="send-all-btn" onclick="sendAllSMS()">📨 Send to All At-Risk</button>
+              <span id="sms-fb" style="font-size:12px;color:var(--teal);display:none"></span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-title" style="margin-bottom:14px">Gateway Info</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--muted)">Provider</span><strong>Twilio</strong></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--muted)">From Number</span><strong style="font-family:var(--mono);font-size:12px">+12603669043</strong></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--muted)">Phone Lookup</span><strong>students.db</strong></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--muted)">Country Prefix</span><strong>+91 (India)</strong></div>
+              <hr style="border:none;border-top:1px solid var(--border);margin:2px 0"/>
+              <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--muted)">Threshold</span><span class="pill pill-orange">Below 75%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-header">
+            <span class="section-title">Delivery Log</span>
+            <span class="section-action" onclick="clearSMSLog()">Clear Log</span>
+          </div>
+          <table>
+            <thead><tr><th>Timestamp</th><th>Roll No</th><th>Student Name</th><th>Attendance %</th><th>Status</th></tr></thead>
+            <tbody id="sms-log">
+              <tr><td colspan="5" class="empty-cell">No messages sent yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           SCREEN 6 — DOWNLOADS
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen" id="screen-downloads">
+        <div class="dl-grid">
+          <div class="card dl-card">
+            <div class="dl-icon-ring dl-icon-green">📗</div>
+            <div class="dl-title">Excel Report (.xlsx)</div>
+            <div class="dl-desc">Filtered list of students below 75% attendance with all subject-wise data, ready for further analysis.</div>
+            <button class="dl-btn-excel" id="dl-excel-btn" onclick="triggerDl('excel')">⬇ Download Excel</button>
+            <div class="dl-meta" id="dl-excel-meta">Upload a file to generate</div>
+          </div>
+          <div class="card dl-card">
+            <div class="dl-icon-ring dl-icon-red">📕</div>
+            <div class="dl-title">PDF Report (.pdf)</div>
+            <div class="dl-desc">Individual shortage letters for each at-risk student with subject-wise breakdown and official headers.</div>
+            <button class="dl-btn-pdf" id="dl-pdf-btn" onclick="triggerDl('pdf')">⬇ Download PDF</button>
+            <div class="dl-meta" id="dl-pdf-meta">Upload a file to generate</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-header">
+            <span class="section-title">Download History</span>
+            <span class="section-action" onclick="clearDlHist()">Clear History</span>
+          </div>
+          <table>
+            <thead><tr><th>Filename</th><th>Format</th><th>Date &amp; Time</th><th>Action</th></tr></thead>
+            <tbody id="dl-hist-tbody">
+              <tr><td colspan="4" class="empty-cell">No downloads yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div>
+
+<!-- ================================================
+     JAVASCRIPT
+     ================================================ -->
+<script>
+/* ─────────────────────────────────────
+   PARTICLE CANVAS — floating stars
+───────────────────────────────────── */
+(function initParticles() {
+  const canvas = document.getElementById('particle-canvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  const COLORS = ['rgba(0,169,157,', 'rgba(243,112,33,', 'rgba(0,135,122,'];
+
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+
+  function Particle() {
+    this.reset = function(init) {
+      this.x     = Math.random() * W;
+      this.y     = init ? Math.random() * H : H + 10;
+      this.r     = Math.random() * 3.25 + 0.5;
+      this.speed = Math.random() * 0.35 + 0.1;
+      this.dx    = (Math.random() - 0.5) * 0.3;
+      this.alpha = Math.random() * 0.55 + 0.15;
+      this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+      this.twinkle      = Math.random() * Math.PI * 2;
+      this.twinkleSpeed = Math.random() * 0.025 + 0.008;
+    };
+    this.reset(true);
+  }
+
+  function init() {
+    resize(); particles = [];
+    const count = Math.floor((W * H) / 9000);
+    for (let i = 0; i < count; i++) particles.push(new Particle());
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.twinkle += p.twinkleSpeed;
+      const a = p.alpha * (0.6 + 0.4 * Math.sin(p.twinkle));
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + a + ')';
+      ctx.fill();
+      p.y -= p.speed; p.x += p.dx;
+      if (p.y < -5 || p.x < -5 || p.x > W + 5) p.reset(false);
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', init);
+  init(); draw();
+})();
+
+/* ─────────────────────────────────────
+   MOUSE PARALLAX on orbs
+───────────────────────────────────── */
+(function initParallax() {
+  const orbT = document.querySelector('.orb-teal');
+  const orbO = document.querySelector('.orb-orange');
+  let mx = 0, my = 0, cx = 0, cy = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+    my = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  function tick() {
+    cx += (mx - cx) * 0.04; cy += (my - cy) * 0.04;
+    if (orbT) orbT.style.transform = `translate(${cx * 22}px, ${cy * 18}px) scale(1)`;
+    if (orbO) orbO.style.transform = `translate(${-cx * 18}px, ${-cy * 14}px) scale(1)`;
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+/* ─────────────────────────────────────
+   APP STATE
+───────────────────────────────────── */
+const S = {
+  user:          null,
+  atRiskData:    [],
+  sentStudents:  new Set(),
+  uploadCount:   0,
+  downloadReady: false,
+  pdfReady:      false,
+  selectedFile:  null,
+};
+
+/* ─────────────────────────────────────
+   BOOT — load session + saved data
+───────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const res = await fetch('/me');
+    if (!res.ok) { window.location.href = '/login'; return; }
+    const user = await res.json();
+    S.user = user;
+    applyUser(user);
+    await restoreMyData();
+  } catch(e) {
+    window.location.href = '/login';
+  }
+});
+
+function applyUser(u) {
+  const initials = u.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('su-avatar').textContent    = initials;
+  document.getElementById('su-name').textContent      = u.name;
+  document.getElementById('su-dept').textContent      = u.dept || u.role;
+  document.getElementById('topbar-avatar').textContent = initials;
+  document.getElementById('topbar-sub').textContent   = `Welcome back, ${u.name}`;
+  document.getElementById('splash-welcome').textContent =
+    `Welcome back, ${u.name}! Your attendance data and upload history are loaded below.`;
+}
+
+/* ─────────────────────────────────────
+   RESTORE SAVED DATA FROM SERVER
+───────────────────────────────────── */
+async function restoreMyData() {
+  try {
+    const res  = await fetch('/my_data');
+    const json = await res.json();
+
+    S.atRiskData    = json.at_risk     || [];
+    S.sentStudents  = new Set((json.sent_rolls || []).map(String));
+    S.uploadCount   = json.uploads?.length || 0;
+    S.downloadReady = json.download_ready;
+    S.pdfReady      = json.pdf_ready;
+
+    // Upload history
+    if (json.uploads?.length) {
+      const tbody = document.getElementById('upload-hist-tbody');
+      tbody.innerHTML = '';
+      json.uploads.forEach(h => {
+        const pc = h.status === 'Processed' ? 'pill-green' : 'pill-orange';
+        tbody.innerHTML += `<tr>
+          <td>${h.filename}</td>
+          <td style="font-family:var(--mono);font-size:12px">${(h.uploaded_at||'').slice(0,16)}</td>
+          <td style="font-family:var(--mono)">${(h.records||0).toLocaleString()}</td>
+          <td><span class="pill ${pc}">${h.status}</span></td></tr>`;
+      });
+    }
+
+    // SMS log
+    if (json.sms_log?.length) {
+      const log = document.getElementById('sms-log');
+      log.innerHTML = '';
+      json.sms_log.forEach(r => {
+        const cls = r.status === 'Sent' ? 'pill-green' : r.status === 'Failed' ? 'pill-red' : 'pill-orange';
+        log.innerHTML += `<tr>
+          <td style="font-family:var(--mono);font-size:12px">${(r.sent_at||'').slice(11,19)}</td>
+          <td style="font-family:var(--mono);font-size:12px">${r.roll}</td>
+          <td>${r.name}</td>
+          <td style="font-family:var(--mono)">${parseFloat(r.percentage||0).toFixed(1)}%</td>
+          <td><span class="pill ${cls}">${r.status}</span></td></tr>`;
+      });
+    }
+
+    // Download history
+    if (json.downloads?.length) {
+      const tbody = document.getElementById('dl-hist-tbody');
+      tbody.innerHTML = '';
+      json.downloads.forEach(d => {
+        const pc   = d.format === 'XLSX' ? 'pill-green' : 'pill-red';
+        const type = d.format === 'XLSX' ? 'excel' : 'pdf';
+        tbody.innerHTML += `<tr>
+          <td>${d.filename}</td>
+          <td><span class="pill ${pc}">${d.format}</span></td>
+          <td style="font-family:var(--mono);font-size:12px">${(d.downloaded_at||'').slice(0,16)}</td>
+          <td><button class="btn-secondary" style="padding:5px 14px;font-size:11px"
+              onclick="triggerDl('${type}')">Re-download</button></td></tr>`;
+      });
+    }
+
+    // Timestamp + export link
+    if (json.at_risk?.length && json.updated_at) {
+      document.getElementById('data-timestamp').style.display = 'block';
+      document.getElementById('data-timestamp').textContent   = `Last updated: ${json.updated_at.slice(0,16)}`;
+      const link = document.getElementById('export-link');
+      link.style.pointerEvents = 'auto';
+      link.style.color         = 'var(--orange)';
+    }
+
+    if (json.download_ready) document.getElementById('dl-excel-meta').textContent = 'Available from last upload';
+    if (json.pdf_ready)      document.getElementById('dl-pdf-meta').textContent   = 'Available from last upload';
+
+    // Last activity
+    if (json.uploads?.length) {
+      const la = document.getElementById('last-activity');
+      la.style.display = 'block';
+      la.innerHTML = `🕒 Last upload: <strong>${json.uploads[0].filename}</strong>
+        on ${(json.uploads[0].uploaded_at||'').slice(0,10)} — ${json.uploads[0].records} at-risk students`;
+    }
+
+    // Analytics badge
+    if (S.atRiskData.length) {
+      const badge = document.getElementById('analytics-badge');
+      badge.style.display = 'inline';
+      badge.textContent   = S.atRiskData.length;
+    }
+
+    updateDash(); updateKPIs();
+
+  } catch(e) { console.warn('Restore error:', e); }
+}
+
+/* ─────────────────────────────────────
+   LIVE CLOCK
+───────────────────────────────────── */
+(function tick() {
+  const d = new Date();
+  document.getElementById('live-date').textContent =
+    d.toLocaleDateString('en-IN', {weekday:'short', month:'short', day:'numeric'}) + ' ' +
+    d.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+  setTimeout(tick, 1000);
+})();
+
+/* ─────────────────────────────────────
+   SCREEN SWITCHER
+───────────────────────────────────── */
+function go(id, navEl, title, sub) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  if (navEl) navEl.classList.add('active');
+  if (title) document.getElementById('topbar-title').textContent = title;
+  if (sub)   document.getElementById('topbar-sub').textContent   = sub;
+  if (id === 'analytics') renderAnalytics();
+  if (id === 'sms')       renderSMS();
+  if (id === 'splash')    updateDash();
+}
+
+/* ─────────────────────────────────────
+   LOGOUT
+───────────────────────────────────── */
+function doLogout() {
+  if (confirm('Sign out of AMS Portal?'))
+    window.location.href = '/logout';
+}
+
+/* ─────────────────────────────────────
+   DRAG & DROP
+───────────────────────────────────── */
+function dzOver(e)  { e.preventDefault(); document.getElementById('dropzone').style.borderColor = 'var(--orange)'; }
+function dzLeave()  { document.getElementById('dropzone').style.borderColor = ''; }
+function dzDrop(e)  { e.preventDefault(); dzLeave(); if (e.dataTransfer.files[0]) selectFile(e.dataTransfer.files[0]); }
+function handleFile(i) { if (i.files[0]) selectFile(i.files[0]); }
+
+function selectFile(f) {
+  if (!f.name.endsWith('.xlsx')) { alert('Please upload an Excel (.xlsx) file.'); return; }
+  S.selectedFile = f;
+  document.getElementById('prog-fname').textContent = f.name;
+  document.getElementById('prog-pct').textContent   = '0%';
+  document.getElementById('prog-fill').style.width  = '0%';
+  document.getElementById('prog-fill').style.background = 'linear-gradient(90deg,var(--teal),var(--orange))';
+  document.getElementById('prog-meta').textContent  = 'File ready — click Upload.';
+  document.getElementById('up-pill').textContent    = 'Ready';
+  document.getElementById('up-pill').className      = 'pill pill-orange';
+  document.getElementById('up-btn').disabled        = false;
+  const s = document.getElementById('dz-sel');
+  s.textContent = '📎 ' + f.name; s.style.display = 'block';
+}
+
+function clearUpload() {
+  S.selectedFile = null;
+  document.getElementById('file-input').value       = '';
+  document.getElementById('prog-fname').textContent = 'No file selected';
+  document.getElementById('prog-pct').textContent   = '0%';
+  document.getElementById('prog-fill').style.width  = '0%';
+  document.getElementById('prog-meta').textContent  = 'Select a file to begin…';
+  document.getElementById('up-pill').textContent    = 'Idle';
+  document.getElementById('up-pill').className      = 'pill pill-teal';
+  document.getElementById('up-btn').disabled        = true;
+  document.getElementById('dz-sel').style.display   = 'none';
+}
+
+/* ─────────────────────────────────────
+   SUBMIT UPLOAD → POST /upload
+───────────────────────────────────── */
+async function submitUpload() {
+  if (!S.selectedFile) return;
+  const fill = document.getElementById('prog-fill');
+  const pct  = document.getElementById('prog-pct');
+  const meta = document.getElementById('prog-meta');
+  const pill = document.getElementById('up-pill');
+  const btn  = document.getElementById('up-btn');
+
+  btn.disabled = true; pill.textContent = 'Uploading'; pill.className = 'pill pill-orange';
+
+  let p = 0;
+  const t = setInterval(() => {
+    p = Math.min(p + Math.random() * 6 + 2, 88);
+    fill.style.width = p + '%'; pct.textContent = Math.round(p) + '%';
+    if (p > 60) meta.textContent = 'Filtering at-risk students…';
+    else if (p > 30) meta.textContent = 'Parsing spreadsheet…';
+    else meta.textContent = 'Uploading…';
+  }, 200);
+
+  try {
+    const fd = new FormData();
+    fd.append('file',      S.selectedFile);
+    fd.append('from_date', document.getElementById('from_date').value);
+    fd.append('to_date',   document.getElementById('to_date').value);
+    // ── NEW: send selected attendance range to backend ──
+    fd.append('att_range', document.getElementById('att_range').value);
+
+    const res  = await fetch('/upload', {method:'POST', body:fd});
+    const json = await res.json();
+    clearInterval(t);
+
+    if (json.error) {
+      fill.style.width = '100%'; fill.style.background = '#E74C3C';
+      meta.textContent = '❌ ' + json.error;
+      pill.textContent = 'Failed'; pill.className = 'pill pill-red';
+      btn.disabled = false; return;
+    }
+
+    fill.style.width = '100%'; pct.textContent = '100%';
+    meta.textContent = `✅ Complete — ${json.total} student(s) found in ${json.att_range || '0-75'}% range`;
+    pill.textContent = 'Processed'; pill.className = 'pill pill-green';
+    btn.disabled = false;
+
+    S.atRiskData    = json.data || [];
+    S.sentStudents.clear();
+    S.downloadReady = json.download_ready;
+    S.pdfReady      = json.pdf_ready;
+    S.uploadCount++;
+
+    const now = new Date().toLocaleString('en-IN');
+    document.getElementById('dl-excel-meta').textContent = `Generated: ${now} · students_below_75.xlsx`;
+    document.getElementById('dl-pdf-meta').textContent   = json.pdf_ready
+      ? `Generated: ${now} · shortage.pdf`
+      : 'PDF not generated (check wkhtmltopdf path in app.py)';
+
+    const link = document.getElementById('export-link');
+    link.style.pointerEvents = 'auto'; link.style.color = 'var(--orange)';
+
+    addUploadHistRow(json.filename, json.total);
+
+    const badge = document.getElementById('analytics-badge');
+    badge.style.display = 'inline'; badge.textContent = S.atRiskData.length;
+
+    // ── NEW: update analytics section title to reflect selected range ──
+    const rangeLabel = json.att_range ? json.att_range + '%' : 'Below 75%';
+    const secTitle = document.getElementById('atrisk-section-title');
+    if (secTitle) secTitle.textContent = `⚠️ Student List — ${rangeLabel} Attendance Range`;
+
+    updateDash(); updateKPIs();
+
+    const la = document.getElementById('last-activity');
+    la.style.display = 'block';
+    la.innerHTML = `🕒 Just uploaded: <strong>${json.filename}</strong> — ${json.total} student(s) in ${json.att_range || '0-75'}% range`;
+
+  } catch(e) {
+    clearInterval(t);
+    fill.style.background = '#E74C3C'; fill.style.width = '100%';
+    meta.textContent = '❌ Network error: ' + e.message;
+    pill.textContent = 'Failed'; pill.className = 'pill pill-red';
+    btn.disabled = false;
+  }
+}
+
+/* ─────────────────────────────────────
+   UPLOAD HISTORY
+───────────────────────────────────── */
+function addUploadHistRow(fname, records) {
+  const tbody = document.getElementById('upload-hist-tbody');
+  const now   = new Date().toISOString().slice(0,16).replace('T',' ');
+  const pc    = records > 0 ? 'pill-green' : 'pill-orange';
+  clearEmpty(tbody, 4);
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${fname}</td>
+    <td style="font-family:var(--mono);font-size:12px">${now}</td>
+    <td style="font-family:var(--mono)">${records.toLocaleString()}</td>
+    <td><span class="pill ${pc}">${records > 0 ? 'Processed' : 'Partial'}</span></td>`;
+  tbody.insertBefore(tr, tbody.firstChild);
+}
+
+async function loadUploadHistory() {
+  try {
+    const res  = await fetch('/upload_history');
+    const list = await res.json();
+    if (!list.length) return;
+    const tbody = document.getElementById('upload-hist-tbody');
+    tbody.innerHTML = '';
+    list.forEach(h => {
+      const pc = h.status === 'Processed' ? 'pill-green' : 'pill-orange';
+      tbody.innerHTML += `<tr>
+        <td>${h.filename}</td>
+        <td style="font-family:var(--mono);font-size:12px">${(h.uploaded_at||'').slice(0,16)}</td>
+        <td style="font-family:var(--mono)">${(h.records||0).toLocaleString()}</td>
+        <td><span class="pill ${pc}">${h.status}</span></td></tr>`;
+    });
+  } catch(e) { console.warn(e); }
+}
+
+/* ─────────────────────────────────────
+   ANALYTICS
+───────────────────────────────────── */
+function renderAnalytics() {
+  const tbody = document.getElementById('analytics-tbody');
+  if (!S.atRiskData.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-cell">No data — please upload a file first</td></tr>';
+    return;
+  }
+  tbody.innerHTML = '';
+  S.atRiskData.forEach((row, i) => {
+    const pct    = parseFloat(row['Present %'] || 0);
+    const isCrit = pct < 60;
+    const pColor = isCrit ? '#E74C3C' : 'var(--orange)';
+    const rClass = isCrit ? 'pill-red' : 'pill-orange';
+    const rLabel = isCrit ? 'Critical' : 'High';
+    const roll   = String(row['Roll No'] || '');
+    const sent   = S.sentStudents.has(roll);
+    tbody.innerHTML += `<tr>
+      <td style="font-family:var(--mono);font-size:12px">${row['S.No'] || i+1}</td>
+      <td style="font-family:var(--mono);font-size:12px">${roll || '—'}</td>
+      <td><strong>${row['Name'] || '—'}</strong></td>
+      <td style="font-family:var(--mono);color:${pColor}">${isNaN(pct)?'—':pct.toFixed(1)+'%'}</td>
+      <td><span class="pill ${rClass}">${rLabel}</span></td>
+      <td><button class="btn-primary"
+        style="padding:5px 12px;font-size:11px;border-radius:20px;${sent?'opacity:.5':''}"
+        onclick="sendSingle('${roll}',this)" ${sent?'disabled':''}>
+        ${sent ? '✓ Sent' : 'SMS'}
+      </button></td></tr>`;
+  });
+  updateKPIs();
+  if (S.atRiskData.length) document.getElementById('data-timestamp').style.display = 'block';
+}
+
+function updateKPIs() {
+  const total = S.atRiskData.length, sent = S.sentStudents.size, up = S.uploadCount;
+  setDonut('donut-atrisk', total, Math.max(total,1),  '#E74C3C', total);
+  setDonut('donut-sms',    sent,  Math.max(total,1),  '#00A99D', sent);
+  setDonut('donut-up',     up,    Math.max(up,5),     '#F37021', up);
+  document.getElementById('kd-atrisk').textContent = total ? `${total} student(s) need attention` : 'Upload data to see';
+  document.getElementById('kd-sms').textContent    = sent  ? `${sent} of ${total} notified`       : 'No SMS sent yet';
+  document.getElementById('kd-up').textContent     = up    ? `${up} file(s) processed`            : 'No uploads yet';
+  document.getElementById('kd-atrisk').style.color = total ? '#E74C3C' : 'var(--muted)';
+}
+
+function setDonut(id, val, max, color, label) {
+  const el = document.getElementById(id); if (!el) return;
+  const p  = max ? Math.min(Math.round((val/max)*100), 100) : 0;
+  el.style.setProperty('--dp', p + '%');
+  el.style.setProperty('--dc', color);
+  el.setAttribute('data-label', label);
+}
+
+/* ─────────────────────────────────────
+   SMS
+───────────────────────────────────── */
+function renderSMS() {
+  const total = S.atRiskData.length, sent = S.sentStudents.size;
+  document.getElementById('sms-total').textContent   = total;
+  document.getElementById('sms-sent').textContent    = sent;
+  document.getElementById('sms-pending').textContent = Math.max(0, total - sent);
+  document.getElementById('sms-recipients').value = total
+    ? `All At-Risk Students (${total} students)` : 'Upload data to load at-risk students';
+  document.getElementById('char-ct').textContent = document.getElementById('sms-body').value.length;
+}
+
+async function sendAllSMS() {
+  if (!S.atRiskData.length) { alert('Upload a file first.'); return; }
+  const btn = document.getElementById('send-all-btn');
+  const fb  = document.getElementById('sms-fb');
+  btn.disabled = true; btn.textContent = '⏳ Sending…'; fb.style.display = 'none';
+  try {
+    const res  = await fetch('/send_all');
+    const json = await res.json();
+    if (json.success) {
+      json.results.forEach(r => {
+        const lbl = r.status === 'sent' ? 'Sent' : r.status === 'already_sent' ? 'Already Sent' : 'No Phone';
+        if (r.status === 'sent') S.sentStudents.add(String(r.roll));
+        addSMSLogRow(r.roll, r.name, lbl);
+      });
+      fb.textContent = `✅ ${json.sent_count} SMS sent.`; fb.style.display = 'inline';
+      renderSMS(); updateKPIs();
+    }
+  } catch(e) {
+    fb.textContent = '❌ ' + e.message; fb.style.color = '#E74C3C'; fb.style.display = 'inline';
+  } finally {
+    btn.textContent = '📨 Send to All At-Risk'; btn.disabled = false;
+  }
+}
+
+async function sendSingle(roll, btn) {
+  btn.disabled = true; btn.textContent = '⏳';
+  try {
+    const res  = await fetch(`/send_sms/${encodeURIComponent(roll)}`);
+    const json = await res.json();
+    if (json.success) {
+      S.sentStudents.add(String(roll));
+      btn.textContent = '✓ Sent'; btn.style.opacity = '.5';
+      const st = S.atRiskData.find(r => String(r['Roll No']) === String(roll));
+      addSMSLogRow(roll, st ? st['Name'] : roll, 'Sent');
+      renderSMS(); updateKPIs();
+    } else {
+      btn.textContent = '❌'; btn.disabled = false;
+    }
+  } catch(e) { btn.textContent = 'SMS'; btn.disabled = false; }
+}
+
+function addSMSLogRow(roll, name, status) {
+  const log  = document.getElementById('sms-log');
+  const time = new Date().toTimeString().slice(0,8);
+  const cls  = status === 'Sent' ? 'pill-green' : status === 'Already Sent' ? 'pill-orange' : 'pill-red';
+  const st   = S.atRiskData.find(r => String(r['Roll No']) === String(roll));
+  const pct  = st ? parseFloat(st['Present %']).toFixed(1) + '%' : '—';
+  clearEmpty(log, 5);
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="font-family:var(--mono);font-size:12px">${time}</td>
+    <td style="font-family:var(--mono);font-size:12px">${roll}</td>
+    <td>${name}</td>
+    <td style="font-family:var(--mono)">${pct}</td>
+    <td><span class="pill ${cls}">${status}</span></td>`;
+  tr.style.animation = 'screenIn .3s ease';
+  log.insertBefore(tr, log.firstChild);
+}
+
+function clearSMSLog() {
+  document.getElementById('sms-log').innerHTML =
+    '<tr><td colspan="5" class="empty-cell">Log cleared</td></tr>';
+}
+
+/* ─────────────────────────────────────
+   DOWNLOADS
+───────────────────────────────────── */
+function triggerDl(type) {
+  if (type === 'excel' && !S.downloadReady) { alert('Upload a file first.'); return; }
+  if (type === 'pdf'   && !S.pdfReady)     { alert('PDF not available. Check wkhtmltopdf in app.py.'); return; }
+
+  const url   = type === 'excel' ? '/download' : '/download_pdf';
+  const btnId = type === 'excel' ? 'dl-excel-btn' : 'dl-pdf-btn';
+  const btn   = document.getElementById(btnId);
+  const orig  = btn.textContent;
+  btn.textContent = '⏳ Preparing…'; btn.disabled = true;
+  window.location.href = url;
+  pushDlHistRow(type === 'excel' ? 'students_below_75.xlsx' : 'shortage.pdf', type === 'excel' ? 'XLSX' : 'PDF');
+  setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2500);
+}
+
+function pushDlHistRow(fname, fmt) {
+  const tbody = document.getElementById('dl-hist-tbody');
+  const now   = new Date().toLocaleString('en-IN');
+  const pc    = fmt === 'XLSX' ? 'pill-green' : 'pill-red';
+  const type  = fmt === 'XLSX' ? 'excel' : 'pdf';
+  clearEmpty(tbody, 4);
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>${fname}</td>
+    <td><span class="pill ${pc}">${fmt}</span></td>
+    <td style="font-family:var(--mono);font-size:12px">${now}</td>
+    <td><button class="btn-secondary" style="padding:5px 14px;font-size:11px"
+        onclick="triggerDl('${type}')">Re-download</button></td>`;
+  tbody.insertBefore(tr, tbody.firstChild);
+}
+
+function clearDlHist() {
+  document.getElementById('dl-hist-tbody').innerHTML =
+    '<tr><td colspan="4" class="empty-cell">History cleared</td></tr>';
+}
+
+/* ─────────────────────────────────────
+   DASHBOARD
+───────────────────────────────────── */
+function updateDash() {
+  document.getElementById('dash-total').textContent   = S.atRiskData.length   || '—';
+  document.getElementById('dash-sent').textContent    = S.sentStudents.size   || '—';
+  document.getElementById('dash-uploads').textContent = S.uploadCount         || '—';
+}
+
+/* ─────────────────────────────────────
+   UTILITY
+───────────────────────────────────── */
+function clearEmpty(tbody, colspan) {
+  if (tbody.rows.length === 1 && tbody.rows[0].cells[0].colSpan === colspan)
+    tbody.innerHTML = '';
+}
+</script>
+
+</body>
+</html>
